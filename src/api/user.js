@@ -20,6 +20,15 @@ export function loginWithPhone(data) {
     })
 }
 
+//获取验证码
+export function googlerecaptcha(data) {
+    return service({
+        url: '/verify_recaptcha',
+        method: 'post',
+        data,
+    });
+}
+
 // 获取登录短信验证码
 export function loginVerifyCode(data) {
     return service({

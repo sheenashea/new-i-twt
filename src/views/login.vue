@@ -79,6 +79,9 @@
                         v-model="verify"
                         :rules="verifyRules"
                       ></v-text-field>
+                      <v-layout v-if="recaptchaLoaded"
+                        ><div id="grecaptcha"></div
+                      ></v-layout>
                     </v-form>
                     <v-card-actions>
                       <v-btn
@@ -103,80 +106,37 @@
       </v-container>
     </v-main>
     <div class="footer">
-      <div class="copyright">
-        <!-- <svg height="24" viewBox="0 0 771.9 615.74">
-          <path
-            d="M687,202.6c-36.9-19.1-108-12-128,18-6.9-2.5-9.6-10-15-14a209.76,209.76,0,0,0-45-26c-56.6-23.3-120.1-1-155,25-11.2,8.3-17.8,23.1-29,31v3c30.5,4.2,55.8,16.5,77,30,8.3,5.3,19.4,10.1,25,18,9.7-1.9,17.3-10.3,26-14,18.5-7.8,39.1-9.2,61-14,17.1-3.7,52.9,6.6,64,11,8,3.2,14.7,4.2,22,8,43.3,22.6,86.4,73.2,90,135,29.4-13.6,51.3-33.9,64-64C771.31,284.7,729.31,224.5,687,202.6Zm-121,97c-13.5-5.9-45.8-16-69-11-16.6,3.6-33.9,5.4-47,13-11.6,6.7-22.8,17.2-34,23-6.8-10.4-18.8-17.8-29-25-38.8-27.3-104.3-48.8-167-28-54,17.9-93.2,52.7-116,102-11.2,24.2-25.2,64.3-17,102,2.5,11.6.8,26,7,34-2.5,4.2-8.5,3.7-13,6a204.22,204.22,0,0,0-25,15c-19.7,14.1-34.9,36.4-46,59-4.4,8.9-10.6,33.8-9,44,0.2,1.2-1,7.1-1,10,0,11.7-.4,21.4,3,33,13.7,47.3,42.5,80.6,85,99,13.6,5.9,28.8,6.3,45,10,19.9,4.5,59.6-8.1,71-14,7.7-4,44.2-25.8,51-30,24.8-15.4,50.6-29.4,76-45,66.1-40.6,135.8-77.6,202-118,38-23.2,75.2-35.1,99-73,7.2-11.4,12.6-25.3,17-39,6-18.9,5.5-51.5,0-70C634.41,347.6,610.21,318.8,566,299.6Z"
-            transform="translate(0 -170.81)"
-          ></path>
-        </svg> -->
-        <span style="cursor: pointer" @click="$router.push({ path: '/about' })"
-          ><strong>@</strong>天外天工作室</span
-        >
-        / © 2000-{{ getYear() }} /
-        <a href="http://www.miibeian.gov.cn/" rel="nofollow"
-          >津ICP备16002964号-1</a
-        >
-        / 津教备0767号
-      </div>
+      <span>© {{ getYear() }} 天外天</span>
     </div>
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
         <v-card-title>
           <span class="headline">重置密码</span>
         </v-card-title>
-        <v-banner
-          width="85%"
-          style="position: relative; margin: 0 auto"
-          color="red-text"
-        >
-          若您已绑定手机号，可通过手机号登录并在个人信息中进行密码修改。<br />
-          若未绑定可从此处重置密码。
-        </v-banner>
         <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12" sm="6" md="6">
-                <v-text-field
-                  label="学工号"
-                  v-model="rePWD.userNumber"
-                  :rules="[(v) => !!v || '不能为空']"
-                  autocomplete="off"
-                  ref="rePWDUserNumber"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" sm="6" md="6">
-                <v-text-field
-                  :rules="[(v) => !!v || '不能为空']"
-                  ref="rePWDIDNumber"
-                  v-model="rePWD.idNumber"
-                  label="身份证号/港澳台通行(身份)证/护照"
-                  autocomplete="off"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" sm="6" md="12">
-                <v-text-field
-                  :rules="[(v) => !!v || '不能为空']"
-                  ref="rePWDnewPassword"
-                  v-model="rePWD.newPassword"
-                  label="新密码"
-                  autocomplete="off"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
+          <v-form ref="form">
+            <v-text-field
+              v-model="rePWD.userNumber"
+              label="用户编号"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="rePWD.idNumber"
+              label="身份证号"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="rePWD.newPassword"
+              label="新密码"
+              type="password"
+              required
+            ></v-text-field>
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="handleResetPwd()">
-            重置
-          </v-btn>
-          <v-btn color="blue darken-1" text @click="dialog = false">
-            关闭
-          </v-btn>
-          <!-- <v-btn color="red" text @click="dialog = false">
-                        申请重置密码
-                    </v-btn> -->
+          <v-btn color="primary" @click="handleResetPwd">重置密码 </v-btn>
+          <v-btn text @click="dialog = false">取消 </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -184,22 +144,26 @@
 </template>
 
 <script>
-import { login, loginWithPhone, loginVerifyCode } from "@/api/user";
+import {
+  login,
+  loginWithPhone,
+  loginVerifyCode,
+  googlerecaptcha,
+} from "@/api/user";
 import Message from "@/components/message";
 import { setToken } from "@/utils/auth";
 import { rePWDByID } from "../api/user";
-// import normalRoutes from "@/router/normalRoutes";
-// import adminRoutes from "@/router/adminRoutes";
 
 export default {
   name: "login",
   data() {
     return {
-      newPas:"",
+      sitekey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+      newPas: "",
       rePWD: {
         userNumber: "",
         idNumber: "",
-        newPassword:"",
+        newPassword: "",
       },
       loginBtnLoading: false,
       dialog: false,
@@ -233,6 +197,7 @@ export default {
             })(v)) ||
           "请您输入合法的验证码",
       ],
+      recaptchaLoaded: false, // 控制 reCAPTCHA 组件是否显示
     };
   },
   methods: {
@@ -240,9 +205,64 @@ export default {
       let date = new Date();
       return date.getFullYear();
     },
+    sendVerifyCode() {
+      // 验证手机号格式
+      const phoneValid = this.phoneRules.every(
+        (rule) => rule(this.phone) === true
+      );
+      if (!phoneValid) {
+        this.$message.error("请输入合法的手机号");
+        return;
+      }
+
+      if (!this.recaptchaLoaded) {
+        this.recaptchaLoaded = true;
+        this.$nextTick(() => {
+          window.grecaptcha.render("grecaptcha", {
+            sitekey: this.sitekey,
+            callback: this.handleRecaptchaSuccess,
+            "expired-callback": this.expiredCallback,
+          });
+        });
+      }
+      Message.warning("请点击按钮进行验证");
+    },
+
+    handleRecaptchaSuccess(token) {
+      //console.log("11111111", token);
+      // 处理验证码发送的逻辑
+      googlerecaptcha(token)
+        .then((res) => {
+          console.log(res);
+          if (res) {
+            // 发送验证码
+            this.processSendVerifyCode();
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
+
+    expiredCallback() {
+      console.log("expire");
+    },
+
+    processSendVerifyCode() {
+      //console.log("1111112222");
+      let data = { phone: this.phone };
+      loginVerifyCode(data)
+        .then(() => {
+          Message.success("短信发送成功");
+        })
+        .catch((error) => {
+          console.error(error);
+          Message.error("短信发送失败");
+        });
+    },
+
     loginCommon() {
       this.loginBtnLoading = true;
-      // console.log(this.username, this.password);
       let data = {
         account: this.username,
         password: this.password,
@@ -264,16 +284,15 @@ export default {
           this.loginBtnLoading = false;
         });
     },
+
     loginPhone() {
       this.loginBtnLoading = true;
-      // console.log(this.phone, this.verify);
       let data = {
         phone: this.phone,
         code: this.verify,
       };
       loginWithPhone(data)
         .then((value) => {
-          // console.log(value);
           Message.success(`登录成功`);
           setToken(value.result.token);
           sessionStorage.setItem("basicInfo", JSON.stringify(value.result));
@@ -289,17 +308,7 @@ export default {
           this.loginBtnLoading = false;
         });
     },
-    sendVerifyCode() {
-      let data = { phone: this.phone };
-      loginVerifyCode(data)
-        .then(() => {
-          // console.log(value);
-          Message.success(`短信发送成功`);
-        })
-        .catch((value) => {
-          console.log(value);
-        });
-    },
+
     handleResetPwd() {
       let flag = true;
       for (let ref in this.$refs) {
@@ -307,17 +316,40 @@ export default {
       }
       if (flag) {
         rePWDByID(this.rePWD).then(() => {
-         
           this.$message.success("密码已重置");
         });
       }
     },
+  },
+  mounted() {
+    //初始化
   },
   created() {
     sessionStorage.clear();
   },
 };
 </script>
+
+<style scoped>
+.bg {
+  background-color: #f5f5f5;
+}
+.login-card {
+  width: 100%;
+}
+.headline {
+  font-size: 24px;
+  font-weight: bold;
+}
+.func-group {
+  margin-top: 10px;
+  text-align: center;
+}
+.footer {
+  text-align: center;
+  padding: 10px;
+}
+</style>
 
 <style lang="scss" scoped>
 div.bg {
